@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebBrief</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <div class="header-brand">
+      <svg class="header-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="7" y1="8"  x2="17" y2="8"  stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="7" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="7" y1="16" x2="13" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="header-title">WebBrief</span>
+    </div>
+    <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Open settings">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ── Settings panel ── -->
+  <section class="panel settings-panel hidden" id="settingsPanel" aria-label="Settings">
+    <h2 class="panel-title">Settings</h2>
+
+    <div class="field">
+      <label class="field-label" for="apiKeyInput">OpenRouter API Key</label>
+      <div class="input-row">
+        <input
+          type="password"
+          id="apiKeyInput"
+          class="text-input"
+          placeholder="sk-or-…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="reveal-btn" id="revealApiKey" title="Show/hide key" aria-label="Toggle API key visibility">
+          <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </button>
+      </div>
+      <p class="field-hint">
+        Get your key at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">openrouter.ai/keys</a>.<br/>
+        Your key is stored locally in Chrome storage and never sent anywhere except OpenRouter.
+      </p>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="modelInput">Model</label>
+      <input
+        type="text"
+        id="modelInput"
+        class="text-input"
+        placeholder="qwen/qwen-2.5-72b-instruct"
+        spellcheck="false"
+      />
+      <p class="field-hint">Any model available on OpenRouter. Default: <code>qwen/qwen-2.5-72b-instruct</code></p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
+      <button class="btn btn-ghost"   id="cancelSettingsBtn">Cancel</button>
+    </div>
+
+    <p class="save-msg hidden" id="saveMsg" role="status"></p>
+
+    <!-- ── Developer Testing ── -->
+    <!-- Clearly separated from user-facing settings. Remove or gate behind a
+         flag before any public distribution. -->
+    <div class="dev-section">
+      <div class="dev-section-label">Developer Testing</div>
+      <p class="field-hint">These controls are for local testing only and should not be exposed to end users.</p>
+      <button class="btn btn-ghost btn-dev-reset" id="devResetBtn">Reset Today's Usage</button>
+      <p class="dev-reset-msg hidden" id="devResetMsg" role="status"></p>
+    </div>
+  </section>
+
+  <!-- ── Main panel ── -->
+  <main class="panel main-panel" id="mainPanel">
+
+    <!-- No API key warning -->
+    <div class="notice notice-warn hidden" id="noKeyNotice" role="alert">
+      <strong>API key required.</strong>
+      Open <button class="inline-link" id="openSettingsFromNotice">Settings</button> to add your OpenRouter API key.
+    </div>
+
+    <!-- Usage indicator – shown when API key is present -->
+    <div class="usage-bar hidden" id="usageBar" aria-live="polite">
+      <div class="usage-dots" id="usageDots" aria-hidden="true"></div>
+      <span class="usage-text" id="usageText"></span>
+    </div>
+
+    <!-- Length selector -->
+    <div class="length-selector" role="group" aria-label="Summary length">
+      <span class="length-label">Length</span>
+      <div class="length-pills">
+        <button class="pill" data-length="short"    aria-pressed="false">Short</button>
+        <button class="pill active" data-length="standard" aria-pressed="true">Standard</button>
+        <button class="pill" data-length="detailed" aria-pressed="false">Detailed</button>
+      </div>
+    </div>
+
+    <!-- Summarize button -->
+    <button class="btn btn-primary btn-summarize" id="summarizeBtn">
+      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      Summarize Page
+    </button>
+
+    <!-- Privacy notice -->
+    <p class="privacy-notice">
+      Page content is sent to the selected AI model to generate the summary.
+    </p>
+
+    <!-- Loading state -->
+    <div class="loading-state hidden" id="loadingState" aria-live="polite" aria-label="Loading">
+      <div class="spinner" aria-hidden="true">
+        <div class="spinner-ring"></div>
+      </div>
+      <p class="loading-text" id="loadingText">Analyzing page…</p>
+    </div>
+
+    <!-- Error state -->
+    <div class="error-state hidden" id="errorState" role="alert">
+      <svg class="error-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="12" cy="16" r="0.5" fill="currentColor" stroke="currentColor"/>
+      </svg>
+      <p class="error-text" id="errorText">Something went wrong.</p>
+      <button class="btn btn-ghost btn-retry" id="retryBtn">Try Again</button>
+    </div>
+
+    <!-- Result state -->
+    <div class="result-state hidden" id="resultState">
+
+      <!-- TL;DR -->
+      <div class="result-card card-tldr">
+        <div class="card-label">TL;DR</div>
+        <p class="tldr-text" id="tldrText"></p>
+      </div>
+
+      <!-- Key Points -->
+      <div class="result-card hidden" id="keyPointsCard">
+        <div class="card-label">Key Points</div>
+        <ul class="point-list" id="keyPointsList"></ul>
+      </div>
+
+      <!-- Important Details -->
+      <div class="result-card hidden" id="detailsCard">
+        <div class="card-label">Important Details</div>
+        <ul class="detail-list" id="detailsList"></ul>
+      </div>
+
+      <!-- Full Summary -->
+      <div class="result-card hidden" id="fullSummaryCard">
+        <div class="card-label">Full Summary</div>
+        <p class="summary-text" id="fullSummaryText"></p>
+      </div>
+
+      <!-- What You Actually Need to Know -->
+      <div class="result-card card-action hidden" id="actionCard">
+        <div class="card-label">What You Actually Need to Know</div>
+        <ul class="action-list" id="actionList"></ul>
+      </div>
+
+      <!-- Metadata footer -->
+      <div class="result-meta" id="resultMeta"></div>
+
+    </div>
+
+  </main>
+
+  <!-- ── Paywall panel ── -->
+  <!-- Shown when the user has used all free summaries for the day -->
+  <section class="panel paywall-panel hidden" id="paywallPanel" aria-label="Upgrade to Pro">
+
+    <div class="paywall-limit-msg">
+      <div class="paywall-limit-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <p class="paywall-limit-title">You've reached today's free limit</p>
+        <p class="paywall-limit-sub">You've used all 3 free WebBrief summaries for today.</p>
+      </div>
+    </div>
+
+    <div class="paywall-card">
+      <div class="paywall-plan-header">
+        <span class="paywall-plan-name">WebBrief Pro</span>
+        <span class="paywall-plan-price">$3 <span class="paywall-plan-period">/ month</span></span>
+      </div>
+      <p class="paywall-plan-desc">Get more from the web, every day.</p>
+      <ul class="paywall-features">
+        <li><span class="paywall-check" aria-hidden="true">✓</span> Unlimited daily summaries</li>
+        <li><span class="paywall-check" aria-hidden="true">✓</span> Longer webpages</li>
+        <li><span class="paywall-check" aria-hidden="true">✓</span> Detailed summaries</li>
+        <li><span class="paywall-check" aria-hidden="true">✓</span> Ask questions about webpages</li>
+        <li><span class="paywall-check" aria-hidden="true">✓</span> Priority access to new features</li>
+      </ul>
+      <button class="btn btn-primary btn-upgrade" id="upgradeBtn">Get WebBrief Pro</button>
+    </div>
+
+    <p class="paywall-footer">Your free summaries reset tomorrow at midnight.</p>
+
+  </section>
+
+  <!-- ── Early-access panel ── -->
+  <!-- Shown when the user clicks "Get WebBrief Pro".
+       No real payment is taken. This measures purchase intent only. -->
+  <section class="panel early-access-panel hidden" id="earlyAccessPanel" aria-label="Early access">
+
+    <button class="back-btn" id="backFromEarlyAccess" aria-label="Go back">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back
+    </button>
+
+    <div class="early-access-body" id="earlyAccessBody">
+      <h2 class="early-access-title">WebBrief Pro is coming soon</h2>
+      <p class="early-access-desc">
+        I'm testing whether people want this before building paid subscriptions.
+        If you'd find unlimited summaries and Pro features useful, let me know — it helps me decide whether to build it.
+      </p>
+      <button class="btn btn-primary btn-interested" id="interestedBtn">I'm interested</button>
+      <p class="early-access-note">No payment. No account. Just a signal.</p>
+    </div>
+
+    <!-- Shown after clicking "I'm interested" -->
+    <div class="early-access-confirmed hidden" id="earlyAccessConfirmed">
+      <div class="confirmed-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M8 12l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="confirmed-title">Thanks for the signal!</p>
+      <p class="confirmed-desc">I'll let you know when WebBrief Pro launches.</p>
+    </div>
+
+  </section>
+
+  <!-- Scripts – load order matters -->
+  <script src="../config/config.js"></script>
+  <script src="../utils/sanitizer.js"></script>
+  <script src="../utils/chunker.js"></script>
+  <script src="../utils/usage.js"></script>
+  <script src="../services/openrouter.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

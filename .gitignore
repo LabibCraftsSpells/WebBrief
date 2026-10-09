@@ -1,0 +1,35 @@
+# Dependencies (none – no npm required)
+node_modules/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets – never commit your API key
+.env
+*.env
+secrets.json
+
+# Build artifacts (not used in V1)
+dist/
+build/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies and generated files
+node_modules/
+.venv/
+venv/
+.DS_Store
+dist/
+build/
