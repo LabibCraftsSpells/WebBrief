@@ -1,182 +1,176 @@
 # WebBrief
 
-> Understand any webpage instantly. AI-powered structured summaries in your browser.
+> **Understand any webpage instantly.** AI-powered structured summaries in your browser.
 
-WebBrief is a Chrome extension that extracts the meaningful content from any webpage and sends it to an AI model via [OpenRouter](https://openrouter.ai) to produce a clean, structured summary — so you don't have to read the entire page.
+WebBrief is a Chrome extension that extracts meaningful content from webpages and uses AI via [OpenRouter](https://openrouter.ai) to generate clean, structured summaries — helping you understand articles without reading every word.
 
----
+## Screenshots
+
+### Extension Popup
+![WebBrief extension popup](screenshots/extension-popup.png)
+
+### Summary Result
+![WebBrief summary result](screenshots/summary-result.png)
+
+### Settings
+![WebBrief settings](screenshots/settings.png)
 
 ## Features
 
-### Core (V1)
-- **Structured summaries** — TL;DR, Key Points, Important Details, Full Summary, and actionable takeaways
-- **Smart content extraction** — prefers semantic HTML (`<article>`, `<main>`) and removes nav/footer/ads/cookie banners
-- **Long page support** — automatically splits very long pages into chunks, summarizes each, then combines
-- **Configurable model** — use any model available on OpenRouter; defaults to `qwen/qwen-2.5-72b-instruct`
-- **Summary length control** — Short / Standard / Detailed
-- **No backend required** — runs entirely client-side; your API key stays in Chrome's local storage
-- **Privacy-first** — no analytics, no accounts, no permanent storage of page content
+### Core Features
+- **Structured summaries** — TL;DR, key points, important details, full summary, and actionable takeaways.
+- **Smart content extraction** — prioritizes semantic HTML such as `<article>` and `<main>`, removing navigation, footers, ads, and cookie banners.
+- **Long-page support** — splits long webpages into chunks, summarizes them individually, and combines the results.
+- **Configurable AI models** — supports models available through OpenRouter.
+- **Summary length control** — choose Short, Standard, or Detailed.
+- **No backend required** — runs entirely in the browser.
+- **Privacy-conscious design** — no accounts, analytics, or permanent storage of page content.
 
-### Freemium experiment (V2)
-- **Daily free limit** — 3 summaries per calendar day; resets at local midnight
-- **Usage indicator** — subtle dot indicator showing summaries used today
-- **Paywall screen** — shown after 3 summaries; displays the WebBrief Pro concept at \$3/month
-- **Early-access flow** — "Get WebBrief Pro" → honest interest-measurement screen (no real payment)
-- **Safe increment** — usage is only counted after a valid summary is returned; errors/empty pages never consume a slot
-- **Developer reset** — Settings → Developer Testing section has a reset button for local testing
+### Freemium Experiment
+- **Daily free limit** — three summaries per calendar day, resetting at local midnight.
+- **Usage indicator** — displays daily summary usage.
+- **Pro concept screen** — introduces a proposed WebBrief Pro plan at $3/month.
+- **Early-access flow** — measures interest without processing real payments.
+- **Safe usage tracking** — successful summaries count toward the limit; errors and empty pages do not.
+- **Developer testing** — reset the daily counter through Settings for local testing.
 
----
+## Tech Stack
 
-## Project Structure
+- **Frontend:** HTML, CSS, JavaScript
+- **Platform:** Chrome Extension Manifest V3
+- **AI integration:** OpenRouter API
+- **Storage:** Chrome `storage.local`
+- **Architecture:** Client-side, no custom backend
 
-```
-webbrief/
-├── manifest.json               Chrome Manifest V3 config
-├── README.md
-├── .gitignore
-│
-├── src/
-│   ├── config/
-│   │   └── config.js           Central configuration (model, chunk sizes, etc.)
-│   │
-│   ├── content/
-│   │   └── extractor.js        Injected into pages to extract meaningful text
-│   │
-│   ├── services/
-│   │   └── openrouter.js       All OpenRouter API communication
-│   │
-│   ├── utils/
-│   │   ├── chunker.js          Splits long text into processable chunks
-│   │   ├── sanitizer.js        Sanitization helpers – prevents XSS
-│   │   └── usage.js            Daily free-limit tracking (V2)
-│   │
-│   └── popup/
-│       ├── popup.html          Extension popup UI
-│       ├── popup.css           Styles
-│       └── popup.js            Popup controller / orchestration
-│
-└── icons/
-    ├── icon16.png
-    ├── icon48.png
-    └── icon128.png
-```
+## How It Works
 
----
+1. Open a webpage in Chrome.
+2. WebBrief extracts the meaningful page content.
+3. Long content is split into manageable chunks when necessary.
+4. The selected AI model generates a structured summary.
+5. WebBrief displays the results in the extension popup.
 
-## How to Install
+## Installation
 
-No build step required. WebBrief is plain HTML/CSS/JavaScript.
+WebBrief requires no build step or `npm install`.
 
-### 1. Clone or download this repository
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/webbrief.git
-# or download and unzip the project
+git clone https://github.com/LabibCraftsSpells/WebBrief.git
+cd WebBrief
 ```
 
 ### 2. Load the extension into Chrome
 
-1. Open Chrome and navigate to `chrome://extensions`
-2. Enable **Developer mode** (toggle in the top-right corner)
-3. Click **Load unpacked**
-4. Select the **`WebBrief`** folder (the one containing `manifest.json`)
-
-The extension will appear in your toolbar. Pin it for easy access.
-
----
+1. Open `chrome://extensions` in Chrome.
+2. Enable **Developer mode**.
+3. Click **Load unpacked**.
+4. Select the project folder containing `manifest.json`.
+5. Pin WebBrief to your toolbar for convenient access.
 
 ## Configuration
 
-### Set your OpenRouter API key
+### Add an OpenRouter API key
 
-1. Click the WebBrief icon in the Chrome toolbar
-2. Click the **⚙ Settings** (gear) icon in the top-right
-3. Paste your OpenRouter API key (get one at [openrouter.ai/keys](https://openrouter.ai/keys))
-4. Optionally change the model name
-5. Click **Save Settings**
+1. Open WebBrief from the Chrome toolbar.
+2. Open **Settings** using the gear icon.
+3. Enter your own API key from [OpenRouter](https://openrouter.ai/keys).
+4. Choose a model supported by OpenRouter, if desired.
+5. Save your settings.
 
-Your API key is stored in Chrome's `chrome.storage.local` — it never leaves your browser except when making requests directly to `https://openrouter.ai`.
+Your API key is stored in Chrome's local extension storage and used to make requests to OpenRouter. You need your own API key to generate summaries, and API usage may incur charges depending on your provider and model.
 
-### Change the model
+### Model Selection
 
-In Settings, replace the model name with any [OpenRouter-compatible model](https://openrouter.ai/models). Examples:
-
-| Model | Notes |
-|---|---|
-| `qwen/qwen-2.5-72b-instruct` | Default – fast, accurate, affordable |
-| `qwen/qwen3-235b-a22b` | Larger Qwen model |
-| `google/gemini-flash-1.5` | Fast alternative |
-| `anthropic/claude-3-haiku` | Good quality, slightly more expensive |
-
----
+WebBrief is designed to work with models available through OpenRouter. The configured default is `qwen/qwen-2.5-72b-instruct`. Available models and pricing can change, so check [OpenRouter's model directory](https://openrouter.ai/models) before selecting one.
 
 ## How to Use
 
-1. Navigate to any webpage you want to understand
-2. Click the WebBrief extension icon
-3. Select your preferred summary length (Short / Standard / Detailed)
-4. Click **Summarize Page**
-5. Read the structured summary
+1. Navigate to a webpage you want to understand.
+2. Click the WebBrief extension icon.
+3. Select Short, Standard, or Detailed summary length.
+4. Click **Summarize Page**.
+5. Review the generated summary, key points, and takeaways.
 
----
+## Project Structure
 
-## Permissions Explained
+```text
+WebBrief/
+├── manifest.json
+├── README.md
+├── .gitignore
+├── icons/
+│   ├── icon16.png
+│   ├── icon48.png
+│   └── icon128.png
+└── src/
+    ├── config/
+    │   └── config.js
+    ├── content/
+    │   └── extractor.js
+    ├── services/
+    │   └── openrouter.js
+    ├── utils/
+    │   ├── chunker.js
+    │   ├── sanitizer.js
+    │   └── usage.js
+    └── popup/
+        ├── popup.html
+        ├── popup.css
+        └── popup.js
+```
 
-| Permission | Why it's needed |
+## Permissions
+
+| Permission | Purpose |
 |---|---|
-| `activeTab` | Read the URL and title of the current tab |
-| `scripting` | Inject `extractor.js` into the page to extract text |
-| `storage` | Save your API key and preferences locally |
-| `host_permissions: openrouter.ai` | Make API calls to OpenRouter from the popup |
-
-No other permissions are requested.
-
----
-
-## Known Limitations
-
-- **chrome:// pages** — Chrome does not allow extensions to read browser internal pages. WebBrief will show an appropriate error.
-- **PDF pages** — PDF rendering is handled by Chrome's internal viewer, not the DOM. PDF support is planned for a future version.
-- **Single-page apps** — Heavily JavaScript-rendered pages (e.g., Twitter/X feeds) may extract less content than expected because the extractor runs against the current DOM state.
-- **Very dynamic content** — Content loaded after user interaction is not automatically captured.
-- **Local files** — `file://` URLs require the user to manually enable "Allow access to file URLs" in `chrome://extensions`.
-- **Long pages** — Pages exceeding ~60,000 characters are capped at 5 chunks. Content beyond the cap is not summarized. This prevents runaway API costs.
-- **Max tokens** — The AI response is capped at 2,048 tokens. Extremely detailed summaries of very long pages may be truncated.
-
----
+| `activeTab` | Access information about the active tab when invoked. |
+| `scripting` | Run the content extractor on the active webpage. |
+| `storage` | Store the API key and preferences locally. |
+| OpenRouter host permission | Send AI requests to the configured OpenRouter endpoint. |
 
 ## Privacy
 
-- Page text is sent to OpenRouter (and the selected AI model) **only when you click Summarize Page**.
-- A disclosure is shown in the UI: _"Page content is sent to the selected AI model to generate the summary."_
-- WebBrief does **not** collect analytics, create accounts, or store page content after the popup is closed.
-- Your API key is stored in Chrome's local extension storage and is only transmitted to `openrouter.ai`.
+- Page content is sent to OpenRouter and the selected AI model when you request a summary.
+- WebBrief displays a disclosure that page content is sent for AI processing.
+- The extension does not require an account or use analytics.
+- Page content is not intentionally retained as summary history after the popup closes.
+- Your API key is stored in Chrome's local extension storage.
 
----
+Avoid summarizing confidential or sensitive webpages unless you are comfortable sending their content to the selected AI provider.
 
-## Future Improvements (not in V1)
+## Known Limitations
 
-- Context-menu "Explain this section" for selected text
+- **Chrome internal pages:** URLs such as `chrome://` cannot be processed.
+- **PDFs:** Chrome's internal PDF viewer is not supported by the current DOM extractor.
+- **Dynamic websites:** Content loaded after the extraction step may be missed.
+- **Single-page applications:** Some complex sites may expose only part of their content.
+- **Local files:** Access to `file://` pages must be enabled manually in Chrome's extension settings.
+- **Very long pages:** Input is capped at approximately 60,000 characters and five chunks.
+- **Response length:** AI output is capped at 2,048 tokens, so some detailed summaries may be shortened.
+
+## Future Improvements
+
+- Context-menu explanations for selected text
 - Summary history
 - PDF summarization
-- YouTube transcript summarization
+- YouTube transcript summaries
 - Multilingual summaries
-- Improved article extraction (Readability.js integration)
-- Reading time estimation
-- Local model support (Ollama)
-- Citation links from summary points back to page sections
-
----
+- Improved article extraction with Readability.js
+- Reading-time estimates
+- Local model support through Ollama
+- Links from summary points back to source sections
 
 ## Development
 
-No build tools, no npm install. Open the project folder, make changes, and reload the extension in `chrome://extensions`.
+WebBrief uses plain HTML, CSS, and JavaScript, with no build tools required.
 
-To see console output from the popup: right-click the extension icon → **Inspect popup**.
+After changing the source code, open `chrome://extensions` and reload the extension.
 
-To see output from the content extractor: open DevTools on the page (`F12`) → Console.
-
----
+For debugging:
+- **Popup:** right-click the extension and select **Inspect popup**.
+- **Content extractor:** open Chrome DevTools on the webpage and inspect the Console.
 
 ## License
 
